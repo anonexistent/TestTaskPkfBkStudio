@@ -4,16 +4,45 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VoinarovskyTestSystem"
-        xmlns:convs="clr-namespace:VoinarovskyTestSystem.Converter"
+        xmlns:convs="clr-namespace:VoinarovskyTestSystem.Converter" xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" xmlns:view="clr-namespace:VoinarovskyTestSystem.View"
         mc:Ignorable="d"
         Title="Test system" Height="550" Width="800">
-    <Window.Resources>
+    <Window.Resources>        
+        <Style x:Key="placeHolder" TargetType="{x:Type TextBox}" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TextBox}">
+                        <Grid>
+                            <TextBox Text="{Binding Path=Text,
+                                                RelativeSource={RelativeSource TemplatedParent}, 
+                                                Mode=TwoWay,
+                                                UpdateSourceTrigger=PropertyChanged}"
+                                 x:Name="textSource" 
+                                 Background="Transparent" 
+                                 Panel.ZIndex="2" />
+                            <TextBox Text="{TemplateBinding Tag}" Background="{TemplateBinding Background}" Panel.ZIndex="1">
+                                <TextBox.Style>
+                                    <Style TargetType="{x:Type TextBox}">
+                                        <Setter Property="Foreground" Value="Transparent"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Path=Text, Source={x:Reference textSource}}" Value="">
+                                                <Setter Property="Foreground" Value="LightGray"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBox.Style>
+                            </TextBox>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <convs:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </Window.Resources>
-
-
-    <Grid Background="AliceBlue" Margin="5">
-        <TabControl ItemsSource="{Binding Tests}" SelectedItem="{Binding CurrentTest}">
+    
+    <Grid>
+        <TabControl ItemsSource="{Binding Tests}" SelectedItem="{Binding CurrentTest}" Margin="0,0,0,40">
             <TabControl.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding Title}"/>
@@ -22,6 +51,12 @@
             <TabControl.ContentTemplate>
                 <DataTemplate>
                     <StackPanel>
+                        <!-- Title and Current Question Number -->
+                        <TextBlock Text="{Binding DataContext.CurrentTest.Title, RelativeSource={RelativeSource AncestorType=TabControl}}"
+                                   FontSize="24" Margin="10"/>
+                        <TextBlock Text="{Binding DataContext.CurrentQuestionNumber, RelativeSource={RelativeSource AncestorType=TabControl}}"
+                                   FontSize="16" Margin="10,0,0,20"/>
+
                         <!-- Question Text -->
                         <TextBlock Text="{Binding DataContext.CurrentQuestion.Text, RelativeSource={RelativeSource AncestorType=TabControl}}"
                                    FontSize="24" Margin="10"/>
@@ -43,7 +78,7 @@
 
                         <!-- Navigation Buttons -->
                         <Button Content="Next" Command="{Binding DataContext.NextCommand, RelativeSource={RelativeSource AncestorType=TabControl}}"
-                                Margin="10" 
+                                Margin="10"
                                 Visibility="{Binding DataContext.IsNextButtonVisible, RelativeSource={RelativeSource AncestorType=TabControl}, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
                         <Button Content="Submit" Command="{Binding DataContext.SubmitCommand, RelativeSource={RelativeSource AncestorType=TabControl}}"
@@ -51,8 +86,12 @@
                                 Visibility="{Binding DataContext.IsSubmitButtonVisible, RelativeSource={RelativeSource AncestorType=TabControl}, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     </StackPanel>
                 </DataTemplate>
-            </TabControl.ContentTemplate>
-        </TabControl>
 
+            </TabControl.ContentTemplate>
+            <!--<TabItem Header="Add Test">
+                <view:AddTestView/>
+            </TabItem>-->
+
+        </TabControl>
     </Grid>
 </Window>
